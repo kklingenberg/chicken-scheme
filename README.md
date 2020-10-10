@@ -29,7 +29,7 @@ proper compiler and linker flags:
 FROM plotter/chicken-scheme:5.2.0-alpine
 WORKDIR /src
 COPY . .
-RUN csc ... TODO write proper compilation instruction
+RUN csc -static -L -static -L -no-pie main.scm
 ENTRYPOINT ["/src/main"]
 ```
 
@@ -40,13 +40,79 @@ only the desired binary:
 FROM plotter/chicken-scheme:5.2.0-alpine as build
 WORKDIR /src
 COPY . .
-RUN csc ... TODO write proper compilation instruction
+RUN csc -static -L -static -L -no-pie main.scm
 
 FROM scratch
-COPY --from=build /src/app /bin/app
-ENTRYPOINT ["/bin/app"]
+COPY --from=build /src/main /bin/main
+ENTRYPOINT ["/bin/main"]
 ```
 
 ## `chicken-assemble`-based projects
 
-TODO explain chicken-assemble and the enforced project structure
+`chicken-assemble` is a simple script which builds a single source
+file given a directory of source files, to be used for later
+compilation. The script wraps each file's contents into a module, and
+provides an unofficial `local` import used for referencing in-folder
+files as modules.
+
+The following illustrates the appropriate directory structure, in case
+you decide to use `chicken-assemble`:
+
+```
+.
+└── src
+    ├── bar
+    │   └── baz.scm
+    ├── core.scm
+    └── foo.scm
+```
+
+Where `.` is where you'd put non-source files like a Dockerfile, or
+license information.
+
+`src` and `core.scm` are the default values for both arguments of
+`chicken-assemble`. They represent the source code folder and the main
+module, respectively. `core.scm` should declare a `-main`. The
+following is a possible listing of all these files contents
+(`core.scm`, `foo.scm` and `bar.scm`):
+
+```scheme
+;; file: src/core.scm
+(import scheme
+        chicken.base
+        (local foo))
+
+(define (-main)
+  (print (foo/do-thing)))
+
+;; file: src/foo.scm
+(import scheme
+        chicken.base
+        (local bar.baz))
+
+(define (do-thing)
+  (print "Doing a thing")
+  bar.baz/thing)
+
+;; file: src/bar/baz.scm
+(import scheme)
+
+(define thing "The nicest thing")
+
+```
+
+To assemble them all, run:
+
+```bash
+chicken-assemble src core > _app.scm
+```
+
+And the contents of `_app.scm` would turn out to be:
+
+```scheme
+(module bar.baz * (import scheme) (define thing "The nicest thing"))
+(module foo * (import scheme chicken.base (prefix bar.baz bar.baz/)) (define (do-thing) (print "Doing a thing") bar.baz/thing))
+(module core * (import scheme chicken.base (prefix foo foo/)) (define (-main) (print (foo/do-thing))))
+(import (chicken process-context) (prefix core core/))
+(apply core/-main (command-line-arguments))
+```
