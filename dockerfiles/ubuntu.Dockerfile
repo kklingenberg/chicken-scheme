@@ -1,6 +1,6 @@
 FROM ubuntu:focal
 
-ENV CHICKEN_VERSION 5.2.0
+ENV CHICKEN_VERSION 5.3.0
 ENV PLATFORM linux
 
 RUN set -eux; \
