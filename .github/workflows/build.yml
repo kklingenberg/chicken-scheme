@@ -1,0 +1,41 @@
+name: Build docker images and push them to the registry
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      CHICKEN_VERSION: 5.3.0
+    steps:
+      - uses: actions/checkout@v2
+      - name: Login
+        env:
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+        run: echo "${DOCKER_HUB_PASSWORD}" | docker login -u plotter --password-stdin
+      - name: Build debian image
+        run: docker build -t "plotter/chicken-scheme:latest"
+                          -t "plotter/chicken-scheme:latest-debian"
+                          -t "plotter/chicken-scheme:${CHICKEN_VERSION}-debian"
+                          -f dockerfiles/debian.Dockerfile
+                          .
+      - name: Build ubuntu image
+        run: docker build -t "plotter/chicken-scheme:latest-ubuntu"
+                          -t "plotter/chicken-scheme:${CHICKEN_VERSION}-ubuntu"
+                          -f dockerfiles/ubuntu.Dockerfile
+                          .
+      - name: Build centos image
+        run: docker build -t "plotter/chicken-scheme:latest-centos"
+                          -t "plotter/chicken-scheme:${CHICKEN_VERSION}-centos"
+                          -f dockerfiles/centos.Dockerfile
+                          .
+      - name: Build alpine image
+        run: docker build -t "plotter/chicken-scheme:latest-alpine"
+                          -t "plotter/chicken-scheme:${CHICKEN_VERSION}-alpine"
+                          -f dockerfiles/alpine.Dockerfile
+                          .
+      - name: Push images
+        run: docker push --all-tags plotter/chicken-scheme
