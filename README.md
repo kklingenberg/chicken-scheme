@@ -7,10 +7,10 @@ provided, used to build projects in an opinionated, structured way.
 You may pick a flavour built on top of popular linux distros:
 
 ```bash
-docker pull plotter/chicken-scheme:5.3.0-alpine
-docker pull plotter/chicken-scheme:5.3.0-debian
-docker pull plotter/chicken-scheme:5.3.0-ubuntu
-docker pull plotter/chicken-scheme:5.3.0-centos
+docker pull plotter/chicken-scheme:5.4.0-alpine
+docker pull plotter/chicken-scheme:5.4.0-debian
+docker pull plotter/chicken-scheme:5.4.0-ubuntu
+docker pull plotter/chicken-scheme:5.4.0-rockylinux
 ```
 
 ## How to use these images
@@ -26,7 +26,7 @@ For truly static builds, prefer the `alpine` base image and set the
 proper compiler and linker flags:
 
 ```dockerfile
-FROM plotter/chicken-scheme:5.3.0-alpine
+FROM plotter/chicken-scheme:5.4.0-alpine
 WORKDIR /src
 COPY . .
 RUN csc -static -L -static -L -no-pie main.scm
@@ -37,7 +37,7 @@ You may also choose to build a barebones `scratch` image containing
 only the desired binary:
 
 ```dockerfile
-FROM plotter/chicken-scheme:5.3.0-alpine as build
+FROM plotter/chicken-scheme:5.4.0-alpine as build
 WORKDIR /src
 COPY . .
 RUN csc -static -L -static -L -no-pie main.scm

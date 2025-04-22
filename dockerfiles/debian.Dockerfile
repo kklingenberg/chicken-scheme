@@ -1,7 +1,7 @@
-FROM debian:bullseye
+FROM debian:bookworm
 
-ENV CHICKEN_VERSION 5.3.0
-ENV PLATFORM linux
+ENV CHICKEN_VERSION=5.4.0
+ENV PLATFORM=linux
 
 RUN set -eux; \
     apt-get update; \
