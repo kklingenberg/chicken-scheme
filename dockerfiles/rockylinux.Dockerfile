@@ -1,6 +1,6 @@
 FROM rockylinux:9
 
-ENV CHICKEN_VERSION=5.4.0
+ENV CHICKEN_VERSION=6.0.0
 ENV PLATFORM=linux
 
 RUN set -eux; \
@@ -16,7 +16,7 @@ RUN set -eux; \
 
 # install project assembly tool
 COPY chicken-assemble.scm /usr/bin/chicken-assemble
-RUN chicken-install clojurian:3 \
+RUN chicken-install clojurian:4 \
                     records \
                     srfi-1 \
                     srfi-69 && \
